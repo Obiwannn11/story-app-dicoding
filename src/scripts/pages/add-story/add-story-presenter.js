@@ -1,5 +1,6 @@
 import * as APIService from '../../data/api.js';
 import * as CameraService from '../../utils/camera-service.js';
+import { showToast } from '../../utils/toast-service.js';
 
 
 class AddStoryPresenter {
@@ -62,7 +63,8 @@ class AddStoryPresenter {
                 formData.lat,
                 formData.lon
             );
-            this._view.showSuccess('Cerita berhasil ditambahkan!');
+            showToast('Cerita baru berhasil ditambahkan!', 'success');
+            this._view.resetForm();
             setTimeout(() => { window.location.hash = '/'; }, 2000);
         } catch (error) {
             this._view.showError(`Gagal: ${error.message}`);

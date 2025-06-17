@@ -37,8 +37,8 @@ self.addEventListener('push', (event) => {
     const title = notificationData.title;
     const options = {
         body: notificationData.options.body,
-        icon: 'public/images/icon-192x192.png',
-        badge: 'public/images/icon-192x192.png',
+        icon: 'src/public/images/icon-192x192.png',
+        badge: 'src/public/images/icon-192x192.png',
     };
     event.waitUntil(self.registration.showNotification(title, options));
 });

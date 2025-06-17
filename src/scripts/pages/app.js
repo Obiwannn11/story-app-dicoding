@@ -58,10 +58,10 @@ class App {
                 const success = await initNotificationSubscription();
                 // Jika berhasil, secara manual tampilkan tombol unsubscribe dan sembunyikan tombol subscribe
                 if (success) {
-                    showToast('Berhasil berlangganan notifikasi!', 'success');
+                    showToast('Berhasil berlangganan!', 'success');
                     this._showUnsubscribeButton();
                 }else{
-                    showToast('Gagal berlangganan notifikasi.', 'error');
+                    showToast('Gagal berlangganan', 'error');
                 }
                 // Aktifkan kembali tombol setelah selesai
                 this._setNotificationButtonsDisabled(false);
@@ -77,12 +77,13 @@ class App {
                 const success = await unsubscribeFromNotifications();
                 // Jika berhasil, tampilkan tombol subscribe dan sembunyikan tombol unsubscribe
                 if (success) {
-                    showToast('Berhasil berhenti berlangganan.', 'info');
+                    showToast('Berhenti berlangganan', 'info');
                     this._showSubscribeButton();
+                }else{
+                    showToast('Gagal berhenti berlangganan.', 'error');
                 }
                 // Aktifkan kembali tombol setelah selesai
                 this._setNotificationButtonsDisabled(false);
-                showToast('Gagal berhenti berlangganan.', 'error');
             });
         }
 

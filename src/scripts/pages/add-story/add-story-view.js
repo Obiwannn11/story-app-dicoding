@@ -90,11 +90,9 @@ class AddStoryView {
         this.errorElement.style.display = 'block';
     }
 
-    showSuccess(message) {
-        this.successElement.textContent = message;
-        this.successElement.style.display = 'block';
-        this.form.reset();
-        this.photoResult.style.display = 'none';
+    resetForm() {
+        if (this.form) this.form.reset();
+        if (this.photoResult) this.photoResult.style.display = 'none';
         this._photoBlob = null;
     }
     
