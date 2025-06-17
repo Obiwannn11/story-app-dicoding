@@ -1,0 +1,37 @@
+<section class="add-story-page" aria-labelledby="add-story-heading">
+    <h2 id="add-story-heading">Tambah Cerita Baru</h2>
+    <form id="addStoryForm">
+        <div class="form-group">
+            <label for="description">Deskripsi Cerita:</label>
+            <textarea id="description" name="description" rows="4" required aria-describedby="description-help"></textarea>
+            <small id="description-help">Tuliskan deskripsi singkat cerita Anda.</small>
+        </div>
+
+        <div class="form-group">
+            <label for="photo">Foto Cerita:</label>
+            <div class="camera-controls">
+                <button type="button" id="openCameraButton" class="button-secondary">Buka Kamera</button>
+                <button type="button" id="capturePhotoButton" class="button-secondary" style="display:none;">Ambil Foto</button>
+            </div>
+            <video id="cameraPreview" playsinline autoplay muted style="display:none; width:100%; max-width:400px; border:1px solid #ccc; margin-top:10px;"></video>
+            <canvas id="photoCanvas" style="display:none;"></canvas> <img id="photoResult" src="#" alt="Hasil foto yang diambil" style="display:none; max-width:100%; max-width:400px; margin-top:10px; border:1px solid #ccc;">
+            <p><small>Atau unggah file (jika kamera tidak tersedia/diinginkan):</small></p>
+            <input type="file" id="photoFile" name="photoFile" accept="image/jpeg, image/png">
+             <small id="photo-help">Ukuran file maksimal 1MB.</small>
+        </div>
+
+        <div class="form-group">
+            <label for="location">Lokasi Cerita (opsional):</label>
+            <div id="mapPickerContainer" class="map-container" style="height:300px;" aria-label="Peta untuk memilih lokasi cerita">
+                <p>Memuat peta picker...</p>
+            </div>
+            <input type="text" id="latitude" name="latitude" readonly placeholder="Latitude" aria-label="Latitude terpilih">
+            <input type="text" id="longitude" name="longitude" readonly placeholder="Longitude" aria-label="Longitude terpilih">
+            <small>Klik pada peta untuk memilih lokasi.</small>
+        </div>
+
+        <button type="submit" id="submitStoryButton" class="button-primary">Bagikan Cerita</button>
+        <p id="addStoryError" class="error-message" aria-live="assertive" style="display:none;"></p>
+        <p id="addStorySuccess" class="success-message" style="display:none;"></p>
+    </form>
+</section>

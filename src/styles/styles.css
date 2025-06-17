@@ -1,0 +1,511 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f4f4f4;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+header {
+    background: #333;
+    color: #fff;
+    padding: 1rem 2rem;
+    text-align: center;
+    border-bottom: 3px solid #5cb85c;
+}
+
+header h1 {
+    margin-bottom: 0.5rem;
+}
+
+nav#main-navigation a {
+    color: #fff;
+    text-decoration: none;
+    margin: 0 0.5rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+nav#main-navigation a:hover,
+nav#main-navigation a.active { 
+    background-color: #5cb85c;
+}
+
+nav#main-navigation button#logoutButton {
+    background-color: #d9534f;
+    color: white;
+    border: none;
+    padding: 0.3rem 0.7rem;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 1rem;
+}
+nav#main-navigation button#logoutButton:hover {
+    background-color: #c9302c;
+}
+
+
+main#app-root {
+    flex-grow: 1;
+    padding: 1.5rem;
+    max-width: 1200px;
+    margin: 0 auto; 
+    width: 100%;
+}
+
+/* Skip Link Accessibility */
+.skip-link {
+    position: absolute;
+    top: -100px; 
+    left: 0;
+    background: #000;
+    color: white;
+    padding: 10px 15px;
+    z-index: 9999;
+    text-decoration: none;
+    border-radius: 0 0 5px 0;
+}
+
+.skip-link:focus {
+    top: 0;
+}
+
+.error-message {
+    color: #d9534f; /* Merah */
+    background-color: #f2dede;
+    border: 1px solid #ebccd1;
+    padding: 0.75rem;
+    margin-top: 0.5rem;
+    border-radius: 4px;
+}
+
+.success-message {
+    color: #3c763d; /* Hijau */
+    background-color: #dff0d8;
+    border: 1px solid #d6e9c6;
+    padding: 0.75rem;
+    margin-top: 0.5rem;
+    border-radius: 4px;
+}
+
+.button-primary {
+    background-color: #5cb85c;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    text-decoration: none;
+    font-size: 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+.button-primary:hover {
+    background-color: #4cae4c;
+}
+.button-primary:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+
+.button-secondary {
+    background-color: #f0ad4e;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    text-decoration: none;
+    font-size: 0.9rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+.button-secondary:hover {
+    background-color: #ec971f;
+}
+
+
+/* Auth Forms (Login & Register) */
+.auth-form-container {
+    max-width: 450px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.1);
+}
+.auth-form-container h2 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    color: #333;
+}
+.form-group {
+    margin-bottom: 1.2rem;
+}
+.form-group label {
+    display: block;
+    margin-bottom: 0.3rem;
+    font-weight: bold;
+}
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="password"],
+.form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+.form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+.auth-switch {
+    text-align: center;
+    margin-top: 1rem;
+}
+.auth-switch a {
+    color: #5cb85c;
+    text-decoration: none;
+}
+.auth-switch a:hover {
+    text-decoration: underline;
+}
+
+
+/* Story List (Home Page) */
+.story-list-page h2 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+.map-container { 
+    width: 100%;
+    height: 350px; 
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #e9e9e9; 
+}
+.stories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.story-item-card {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    overflow: hidden; 
+    display: flex;
+    flex-direction: column;
+}
+.story-item-card figure {
+    margin: 0;
+    position: relative;
+}
+.story-item-card img {
+    width: 100%;
+    height: 200px; 
+    object-fit: cover;
+    display: block;
+}
+.story-item-card figcaption {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    background: rgba(0,0,0,0.6);
+    color: white;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.85rem;
+    width: 100%;
+}
+.story-item-content {
+    padding: 1rem;
+    flex-grow: 1; 
+}
+.story-item-content .story-description {
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+    min-height: 60px; 
+}
+.story-item-content .story-meta,
+.story-item-content .story-location {
+    font-size: 0.8rem;
+    color: #666;
+}
+
+/* Add Story Page */
+.add-story-page {
+    max-width: 700px;
+    margin: 1rem auto;
+    padding: 1.5rem;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.1);
+}
+.add-story-page h2 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+.camera-controls button {
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+/* View Transitions */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+::view-transition-old(root) {
+  animation: 300ms cubic-bezier(0.4, 0, 0.2, 1) both fade-out;
+}
+
+::view-transition-new(root) {
+  animation: 300ms cubic-bezier(0.4, 0, 0.2, 1) both fade-in;
+}
+
+/* Responsive*/
+@media (max-width: 768px) {
+    main#app-root {
+        padding: 1rem;
+    }
+    .stories-grid {
+        grid-template-columns: 1fr; 
+    }
+    header {
+        padding: 1rem;
+    }
+    nav#main-navigation a {
+        margin: 0 0.3rem;
+        padding: 0.2rem 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .auth-form-container, .add-story-page {
+        padding: 1rem;
+        margin: 1rem;
+    }
+    header h1 {
+        font-size: 1.5rem;
+    }
+    nav#main-navigation {
+        font-size: 0.9rem;
+    }
+    nav#main-navigation a {
+        display: block; 
+        margin-bottom: 0.3rem;
+    }
+    nav#main-navigation button#logoutButton {
+        display: block;
+        width: 100%;
+        margin-top: 0.5rem;
+        margin-left: 0;
+    }
+}
+
+
+/* Tombol Drawer */
+.drawer-toggle {
+    font-size: 1.5rem;
+    background: none;
+    border: none;
+    color: white; 
+    cursor: pointer;
+    padding: 0.5rem;
+}
+
+/* Drawer Navigasi */
+.drawer-nav {
+    position: fixed;
+    top: 0;
+    left: -280px; 
+    width: 280px;
+    height: 100%;
+    background-color: #444; 
+    color: white;
+    padding: 1rem;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.2);
+    transition: left 0.3s ease-in-out;
+    z-index: 1000; 
+    overflow-y: auto;
+}
+
+.drawer-nav.open {
+    left: 0; 
+}
+
+.drawer-nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.drawer-nav li a {
+    display: block;
+    color: white;
+    text-decoration: none;
+    padding: 0.8rem 1rem;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+}
+
+.drawer-nav li a:hover,
+.drawer-nav li a.active {
+    background-color: #5cb85c;
+}
+
+/* Biasanya, tombol drawer hanya tampil di mobile */
+@media (min-width: 769px) { 
+    .drawer-toggle {
+        display: none; 
+    }
+}
+
+@media (max-width: 768px) {
+    .header-nav { 
+        display: none;
+    }
+    .drawer-toggle {
+        display: inline-block; 
+    }
+}
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+
+.notification-button {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+  margin-left: 10px;
+}
+
+/* Tombol Aktifkan (Subscribe)  */
+#subscribeNotifButton {
+  background-color: darkgreen;
+    color: white;
+    border: none;
+    padding: 0.3rem 0.7rem;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 1rem;
+}
+
+#subscribeNotifButton:hover {
+  background-color: #1d4e09;
+}
+
+/* Tombol Nonaktifkan (Unsubscribe)  */
+#unsubscribeNotifButton {
+
+   background-color: #d9534f;
+    color: white;
+    border: none;
+    padding: 0.3rem 0.7rem;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 1rem;
+}
+
+#unsubscribeNotifButton:hover {
+    background-color: #c9302c;
+}
+
+/* Styling saat tombol dinonaktifkan/ selama proses */
+.notification-button:disabled {
+  background-color: #f5f5f5;
+  color: #aaa;
+  cursor: wait; 
+  border-color: #eee;
+}
+
+/* --- Toast Notification Styling --- */
+
+#toast-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.toast {
+  padding: 15px 20px;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 0.9rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  opacity: 0;
+  transform: translateY(20px);
+  animation: toast-fade-in 0.5s forwards;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.toast.hide {
+  animation: toast-fade-out 0.5s forwards;
+}
+
+/* Warna untuk tipe notifikasi */
+.toast.success {
+  background-color: #28a745; /* Hijau */
+}
+
+.toast.error {
+  background-color: #dc3545; /* Merah */
+}
+
+.toast.info {
+  background-color: #17a2b8; /* Biru */
+}
+
+@keyframes toast-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes toast-fade-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}

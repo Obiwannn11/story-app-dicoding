@@ -1,0 +1,16 @@
+<article class="story-item-card">
+    <figure>
+        <img src="{{photoUrl}}" alt="Foto cerita oleh {{name}}" loading="lazy">
+        <figcaption>Oleh: {{name}}</figcaption>
+    </figure>
+    <div class="story-item-content">
+        <p class="story-description">{{description}}</p>
+        <p class="story-meta"><small>Disimpan pada: {{createdAt}}</small></p>
+        <p class="story-location"><small>Lokasi: {{lat}}, {{lon}}</small></p>
+    </div>
+    <div class="story-item-actions">
+        <button class="delete-button" data-id="{{id}}" aria-label="Delete story titled {{name}}">
+            Delete
+        </button>
+    </div>
+</article>

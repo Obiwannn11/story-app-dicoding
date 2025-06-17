@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Aplikasi berbagi cerita dengan lokasi.">
+    <meta name="theme-color" content="#333333"/>
+    <link rel="manifest" href="manifest.json">
+    <title>Story App</title>
+    <link rel="icon" href="src/public/favicon.png"> <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+     crossorigin=""/>
+
+     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+     crossorigin=""/>
+
+    </head>
+<body>
+    <a href="#main-content" class="skip-link">Lompat ke Konten Utama</a>
+
+    <header>
+        <div class="header-content">
+            <h1>Story App</h1>
+            <button id="drawer-button" class="drawer-toggle" aria-label="Buka menu navigasi" aria-expanded="false" aria-controls="navigation-drawer">
+                ☰ Menu
+            </button>
+        </div>
+        <nav id="main-navigation" class="header-nav">
+            <a href="#/">Beranda</a>
+            <a href="#/add-story">Tambah Cerita</a>
+            <a href="#/saved">Saved</a>
+            <button id="subscribeNotifButton" style="display:none;">Enable Notifications</button>
+            <button id="unsubscribeNotifButton" style="display:none;">Disable Notifications</button>
+            <button id="logoutButton" style="display:none;">Logout</button>
+        </nav>
+    </header>
+    
+    <nav id="navigation-drawer" class="drawer-nav" aria-label="Menu navigasi samping">
+        <ul>
+            <li><a href="#/">Beranda</a></li>
+            <li><a href="#/add-story">Tambah Cerita</a></li>
+            <li><a href="#/saved">Saved</a></li>
+            <button id="subscribeNotifButton" class="notification-button" style="display: none;" aria-label="Aktifkan Notifikasi">
+            🔔 Aktifkan Notifikasi
+            </button>
+            <button id="unsubscribeNotifButton" class="notification-button unsubscribe" style="display: none;" aria-label="Nonaktifkan Notifikasi">
+            🔕 Nonaktifkan Notifikasi
+            </button>
+            <button id="logoutButton" style="display:none;">Logout</button>
+            </ul>
+    </nav>
+
+    <main id="main-content" tabindex="-1">
+        <p>Memuat halaman...</p>
+    </main>
+
+    <!-- toast  -->
+    <div id="toast-container"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+     crossorigin=""></script>
+
+    </body>
+</html>
