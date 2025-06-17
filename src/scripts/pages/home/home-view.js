@@ -23,20 +23,34 @@ class HomeView {
             const createdAt = story.createdAt ? new Date(story.createdAt).toLocaleDateString('id-ID') : "Tanggal tidak diketahui";
             
             let storyHtml = storyItemTemplate;
-            storyHtml = storyHtml.replace('{{photoUrl}}', photoUrl)
-                                 .replace('{{namaaa}}',  storyName)
-                                 .replace('{{description}}', storyDescription)
-                                 .replace('{{createdAt}}', createdAt)
-                                 .replace('Foto cerita oleh {{name}}', `Foto cerita oleh ${storyName.name}. Deskripsi: ${story.description.substring(0,50)}...`); 
 
-             storyHtml = storyHtml.replace(/\{\{id\}\}/g, story.id);
-                                 
+             // untuk menentukan tampilan tombol
+            if (story.isSaved) {
+                // Jika cerita sudah disimpan, ganti tombol 'Save' dengan versi 'Saved!' yang dinonaktifkan
+                storyHtml = storyHtml.replace(
+                    '<button class="save-button" data-id="{{id}}" aria-label="Save story {{name}}">Save</button>',
+                    '<button class="save-button saved" data-id="{{id}}" disabled>Saved!</button>'
+                );
+            } else {
+                // Jika belum disimpan, pastikan tombol 'Save' tetap ada
+                const saveButtonHtml = `<button class="save-button" data-id="${story.id}" aria-label="Save story ${storyName}">Save</button>`;
+                storyHtml = storyHtml.replace(/<div class="story-item-actions">[\s\S]*?<\/div>/, 
+                    `<div class="story-item-actions">${saveButtonHtml}</div>`);
+            }
+            
+            storyHtml = storyHtml.replace('{{photoUrl}}', photoUrl)
+            .replace('{{namaaa}}',  storyName)
+            .replace('{{description}}', storyDescription)
+            .replace('{{createdAt}}', createdAt)
+            .replace('Foto cerita oleh {{name}}', `Foto cerita oleh ${storyName.name}. Deskripsi: ${story.description.substring(0,50)}...`); 
+
             if (story.lat != null && story.lon != null) {
                 storyHtml = storyHtml.replace(/\{\{lat\}\}/g, parseFloat(story.lat).toFixed(4))
                                      .replace(/\{\{lon\}\}/g, parseFloat(story.lon).toFixed(4));
             } else {
                 storyHtml = storyHtml.replace(/<p class="story-location">.*?<\/p>/s, '');
             }
+
             this.storiesContainer.innerHTML += storyHtml;
         });
     }
@@ -44,14 +58,13 @@ class HomeView {
     // Metode untuk menangani event klik pada tombol simpan cerita
     bindSaveStoryClick(handler) {
         if (this.storiesContainer) {
-            // Menggunakan event delegation untuk efisiensi
             this.storiesContainer.addEventListener('click', (event) => {
-                if (event.target.classList.contains('save-button')) {
+                // Pastikan event hanya berjalan untuk tombol yang TIDAK dinonaktifkan
+                if (event.target.classList.contains('save-button') && !event.target.disabled) {
                     const storyId = event.target.dataset.id;
                     handler(storyId);
                     
-                    // Beri feedback visual ke pengguna
-                    event.target.textContent = 'Tersimpan!';
+                    event.target.textContent = 'Saved!';
                     event.target.disabled = true;
                 }
             });

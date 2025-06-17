@@ -3,7 +3,7 @@ class HomePresenter {
     constructor({ view, apiService, indexeddbService,storyItemTemplate }) {
         this._view = view;
         this._apiService = apiService;
-         this._indexeddbService = indexeddbService;
+        this._indexeddbService = indexeddbService;
         this._storyItemTemplate = storyItemTemplate;
 
         // Inisialisasi state halaman yang dikelola oleh Presenter
@@ -30,13 +30,23 @@ class HomePresenter {
         try {
             this._view.showLoading(); //Tampilkan loading
 
-            const response = await this._apiService.getAllStories(
-                this._currentPage, 
-                this._storiesPerPage, 
-                1 // location=1
-            );
-            
-            this._currentStories = response.listStory || [];
+            // Ambil data dari API dan IndexedDB secara bersamaan
+            const [apiResponse, savedStories] = await Promise.all([
+                this._apiService.getAllStories(this._currentPage, this._storiesPerPage, 1),
+                this._indexeddbService.getAllSavedStories(),
+            ]);
+
+            const savedStoryIds = new Set(savedStories.map(story => story.id));
+
+            const storiesFromAPI = apiResponse.listStory || [];
+            const enrichedStories = storiesFromAPI.map(story => {
+                return {
+                    ...story, // Salin semua properti asli dari cerita
+                    isSaved: savedStoryIds.has(story.id) // Tambahkan properti baru: isSaved
+                };
+            });
+
+            this._currentStories = enrichedStories; // Simpan data yang sudah diperkaya
 
            if (this._currentStories && this._currentStories.length > 0) {
                 this._view.renderStories(this._currentStories, this._storyItemTemplate);

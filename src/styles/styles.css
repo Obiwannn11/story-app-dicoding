@@ -509,3 +509,12 @@ main#app-root {
     transform: translateY(20px);
   }
 }
+
+
+.save-button.saved,
+.save-button:disabled {
+  background-color: #28a745; /* Warna hijau sukses */
+  color: white;
+  cursor: default;
+  border-color: #28a745;
+}

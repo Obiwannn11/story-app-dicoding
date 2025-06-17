@@ -7,7 +7,6 @@ const OBJECT_STORE_NAME = 'saved-stories';
 const dbPromise = openDB(DB_NAME, DB_VERSION, {
   // Metode upgrade dipanggil jika versi database berubah atau saat pertama kali dibuat
   upgrade(database) {
-    console.log('Database upgrade needed.');
     // Buat object store dengan 'id' sebagai primary key
     database.createObjectStore(OBJECT_STORE_NAME, { keyPath: 'id' });
     console.log(`Object store "${OBJECT_STORE_NAME}" berhasil dibuat.`);

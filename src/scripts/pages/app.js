@@ -186,16 +186,22 @@ class App {
         const currentRouteKey = getActiveRoute();
         const isAuth = isAuthenticated();
 
-        // Auth Guard: Mengatur akses ke halaman publik dan privat
+        
         const publicRoutes = ['/login', '/register'];
-        if (!isAuth && !publicRoutes.includes(currentRouteKey)) {
+    if (!isAuth && !publicRoutes.includes(currentRouteKey)) {
+        //  redirect jika belum berada di halaman login
+        if (currentRouteKey !== '/login') {
             window.location.hash = '#/login';
-            return;
         }
-        if (isAuth && publicRoutes.includes(currentRouteKey)) {
-            window.location.hash = '/';
-            return;
+        return;
+    }
+    if (isAuth && publicRoutes.includes(currentRouteKey)) {
+        //  redirect jika belum berada di halaman utama
+        if (currentRouteKey !== '/') {
+            window.location.hash = '#/';
         }
+    return;
+    }
 
         // Panggil cleanup pada modul halaman sebelumnya untuk mencegah memory leak
         if (this._currentPageModule && typeof this._currentPageModule.cleanup === 'function') {
