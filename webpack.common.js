@@ -54,24 +54,24 @@ module.exports = {
           globOptions: {
             ignore: ['**/*.js'], // Abaikan file JS karena sudah di-bundle  babel
           },
-          noErrorOnMissing: true,
+          // noErrorOnMissing: true,
         },{
           // membuat manifest.json ke root direktori output
           from: path.resolve(__dirname, 'src/public/manifest.json'),
           to: 'manifest.json', // Akan menjadi 'dist/manifest.json'
-          noErrorOnMissing: true,
+          // noErrorOnMissing: true,
         },
         {
           // Menyalin service worker ke root direktori output
           from: path.resolve(__dirname, 'src/sw.js'),
           to: 'sw.js', // Akan menjadi 'dist/sw.js'
-          noErrorOnMissing: true,
+          // noErrorOnMissing: true,
         },
       ],
     }),
-    new InjectManifest({
-        swSrc: path.resolve(__dirname, 'src/sw-source.js'), // Path ke file source SW 
-        swDest: 'sw.js', // file Service Worker output di direktori 'dist'
-    }),
+    // new InjectManifest({
+    //     swSrc: path.resolve(__dirname, 'src/sw-source.js'), // Path ke file source SW 
+    //     swDest: 'sw.js', // file Service Worker output di direktori 'dist'
+    // }),
   ],
 };
