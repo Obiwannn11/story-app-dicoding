@@ -30,6 +30,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     console.log('Pendaftaran Service Worker gagal: ', error);
                 });
         });
+    } else {
+        console.warn('Service Worker tidak didukung di browser ini.');
     }
 
 });

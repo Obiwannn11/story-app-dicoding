@@ -2,39 +2,45 @@ import routes from '../routes/routes-definition.js';
 import { getActiveRoute } from '../routes/url-parser.js';
 import { isAuthenticated, logout } from '../utils/auth-service.js';
 import { initNotificationSubscription, unsubscribeFromNotifications } from '../utils/notification-service.js';
-import { showToast } from '../utils/toast-service.js'; //
+import { showToast } from '../utils/toast-service.js';
 
 class App {
     constructor({ content, drawerButton, navigationDrawer }) {
+        // Validasi elemen DOM yang diperlukan
+        if (!content) {
+            throw new Error('Content element is required');
+        }
+
         // Menyimpan referensi ke elemen DOM utama
         this._content = content;
         this._drawerButton = drawerButton;
         this._navigationDrawer = navigationDrawer;
-        // button subsribve
+        
+        // Button subscribe/unsubscribe
         this._subscribeButton = document.getElementById('subscribeNotifButton');
         this._unsubscribeButton = document.getElementById('unsubscribeNotifButton'); 
-
         this._logoutButton = document.getElementById('logoutButton');
         this._mainNav = document.getElementById('main-navigation'); 
-        this._drawerNavLinks = this._navigationDrawer ? this._navigationDrawer.querySelectorAll('a') : []; // Link di dalam drawer
+        this._drawerNavLinks = this._navigationDrawer ? this._navigationDrawer.querySelectorAll('a') : [];
 
-        this._currentPageModule = null; 
+        this._currentPageModule = null;
+        this._isRendering = false; // Flag untuk mencegah render concurrent
+        this._cleanupTasks = new Set(); // Track cleanup tasks
+        this._eventListeners = new Map(); // Track event listeners untuk cleanup
 
-
-
-        this._initAppShell(); //  metode untuk inisialisasi UI  aplikasi
+        this._initAppShell();
     }
 
     _initAppShell() {
-        // Inisialisasi event listener untuk tombol drawer (menu samping)
+        // Inisialisasi event listener untuk tombol drawer
         if (this._drawerButton && this._navigationDrawer) {
-            this._drawerButton.addEventListener('click', (event) => {
-                event.stopPropagation(); // Mencegah event klik menyebar lebih lanjut
+            this._addEventListenerWithCleanup(this._drawerButton, 'click', (event) => {
+                event.stopPropagation();
                 this._toggleDrawer();
             });
 
             // Menutup drawer jika pengguna mengklik di luar area drawer
-            document.body.addEventListener('click', (event) => {
+            this._addEventListenerWithCleanup(document.body, 'click', (event) => {
                 if (this._navigationDrawer && this._navigationDrawer.classList.contains('open')) {
                     if (!this._navigationDrawer.contains(event.target) && event.target !== this._drawerButton) {
                         this._closeDrawer();
@@ -42,62 +48,100 @@ class App {
                 }
             });
 
-            // Menutup drawer saat salah satu link navigasi di dalam drawer diklik
+            // Menutup drawer saat link navigasi diklik
             this._drawerNavLinks.forEach(link => {
-                link.addEventListener('click', () => {
+                this._addEventListenerWithCleanup(link, 'click', () => {
                     this._closeDrawer();
                 });
             });
         }
 
-        // ketia button susbribve di tekan
+        // Event listener untuk tombol subscribe
         if (this._subscribeButton) {
-            this._subscribeButton.addEventListener('click', async () => {
-                // Nonaktifkan kedua tombol untuk mencegah klik dobel
-                this._setNotificationButtonsDisabled(true);
-                const success = await initNotificationSubscription();
-                // Jika berhasil, secara manual tampilkan tombol unsubscribe dan sembunyikan tombol subscribe
-                if (success) {
-                    showToast('Berhasil berlangganan!', 'success');
-                    this._showUnsubscribeButton();
-                }else{
-                    showToast('Gagal berlangganan', 'error');
-                }
-                // Aktifkan kembali tombol setelah selesai
-                this._setNotificationButtonsDisabled(false);
+            this._addEventListenerWithCleanup(this._subscribeButton, 'click', async () => {
+                await this._handleSubscribeClick();
             });
         }
 
-        // ketika buutton unsubscribe di tekan
+        // Event listener untuk tombol unsubscribe
         if (this._unsubscribeButton) {
-            this._unsubscribeButton.addEventListener('click', async () => {
-                // Nonaktifkan tombol
-                this._setNotificationButtonsDisabled(true);
-                // Panggil proses unsubscribe
-                const success = await unsubscribeFromNotifications();
-                // Jika berhasil, tampilkan tombol subscribe dan sembunyikan tombol unsubscribe
-                if (success) {
-                    showToast('Berhenti berlangganan', 'info');
-                    this._showSubscribeButton();
-                }else{
-                    showToast('Gagal berhenti berlangganan.', 'error');
-                }
-                // Aktifkan kembali tombol setelah selesai
-                this._setNotificationButtonsDisabled(false);
+            this._addEventListenerWithCleanup(this._unsubscribeButton, 'click', async () => {
+                await this._handleUnsubscribeClick();
             });
         }
 
-        // Inisialisasi event listener untuk tombol logout
+        // Event listener untuk tombol logout
         if (this._logoutButton) {
-            this._logoutButton.addEventListener('click', () => {
-                logout(); //  logout 
-                window.location.hash = '#/login'; // Mengarahkan pengguna ke halaman login
+            this._addEventListenerWithCleanup(this._logoutButton, 'click', () => {
+                this._handleLogout();
             });
         }
     }
 
+    // Helper method untuk menambah event listener dengan tracking
+    _addEventListenerWithCleanup(element, event, handler) {
+        if (!element) return;
+        
+        element.addEventListener(event, handler);
+        
+        // Track untuk cleanup nanti
+        const key = `${element.constructor.name}-${event}`;
+        if (!this._eventListeners.has(key)) {
+            this._eventListeners.set(key, []);
+        }
+        this._eventListeners.get(key).push({ element, event, handler });
+    }
 
-    // method untuk mengatur status tombol subsribce
+    async _handleSubscribeClick() {
+        try {
+            this._setNotificationButtonsDisabled(true);
+            const success = await initNotificationSubscription();
+            
+            if (success) {
+                showToast('Berhasil berlangganan!', 'success');
+                this._showUnsubscribeButton();
+            } else {
+                showToast('Gagal berlangganan', 'error');
+            }
+        } catch (error) {
+            console.error('Error during subscription:', error);
+            showToast('Terjadi kesalahan saat berlangganan', 'error');
+        } finally {
+            this._setNotificationButtonsDisabled(false);
+        }
+    }
+
+    async _handleUnsubscribeClick() {
+        try {
+            this._setNotificationButtonsDisabled(true);
+            const success = await unsubscribeFromNotifications();
+            
+            if (success) {
+                showToast('Berhenti berlangganan', 'info');
+                this._showSubscribeButton();
+            } else {
+                showToast('Gagal berhenti berlangganan', 'error');
+            }
+        } catch (error) {
+            console.error('Error during unsubscription:', error);
+            showToast('Terjadi kesalahan saat berhenti berlangganan', 'error');
+        } finally {
+            this._setNotificationButtonsDisabled(false);
+        }
+    }
+
+    _handleLogout() {
+        try {
+            logout();
+            // Bersihkan state aplikasi
+            this._cleanup();
+            window.location.hash = '#/login';
+        } catch (error) {
+            console.error('Error during logout:', error);
+            showToast('Terjadi kesalahan saat logout', 'error');
+        }
+    }
+
     _setNotificationButtonsDisabled(isDisabled) {
         if (this._subscribeButton) this._subscribeButton.disabled = isDisabled;
         if (this._unsubscribeButton) this._unsubscribeButton.disabled = isDisabled;
@@ -113,30 +157,34 @@ class App {
         if (this._unsubscribeButton) this._unsubscribeButton.style.display = 'inline-block';
     }
 
-
-
-    // method untuk subs button
     async _updateNotificationButtonState() {
-        // Cek apakah fitur Push didukung oleh browser
-       if (!('Notification' in window) || !('PushManager' in window) || !('serviceWorker' in navigator)) {
-            this._showSubscribeButton();
-            this._subscribeButton.style.display = 'none'; // Sembunyikan semua jika tidak didukung
-            return;
+        try {
+            // Cek dukungan browser untuk Push Notification
+            if (!('Notification' in window) || !('PushManager' in window) || !('serviceWorker' in navigator)) {
+                this._hideAllNotificationButtons();
+                return;
+            }
+        
+            const swRegistration = await navigator.serviceWorker.ready;
+            const subscription = await swRegistration.pushManager.getSubscription();
+            const isAuth = isAuthenticated();
+        
+            if (isAuth && subscription) {
+                this._showUnsubscribeButton();
+            } else if (isAuth && !subscription) {
+                this._showSubscribeButton();
+            } else {
+                this._hideAllNotificationButtons();
+            }
+        } catch (error) {
+            console.error('Error updating notification button state:', error);
+            this._hideAllNotificationButtons();
         }
-    
-        const swRegistration = await navigator.serviceWorker.ready;
-        const subscription = await swRegistration.pushManager.getSubscription();
-        const isAuth = isAuthenticated();
-    
-        if (isAuth && subscription) {
-            this._showUnsubscribeButton();
-        } else if (isAuth && !subscription) {
-            this._showSubscribeButton();
-        } else {
-            // Sembunyikan kedua tombol jika tidak login
-            this._showSubscribeButton(); // Tampilkan subscribe sebagai default
-            this._subscribeButton.style.display = 'none'; // Lalu sembunyikan
-        }
+    }
+
+    _hideAllNotificationButtons() {
+        if (this._subscribeButton) this._subscribeButton.style.display = 'none';
+        if (this._unsubscribeButton) this._unsubscribeButton.style.display = 'none';
     }
 
     _toggleDrawer() {
@@ -154,95 +202,198 @@ class App {
         }
     }
 
-    _updateNavUI(isAuth) {
-        //  visibilitas tombol logout berdasarkan status autentikasi
-        if (this._logoutButton) {
-            this._logoutButton.style.display = isAuth ? 'inline-block' : 'none';
+    async _updateNavUI(isAuth) {
+        try {
+            // Update visibilitas tombol logout
+            if (this._logoutButton) {
+                this._logoutButton.style.display = isAuth ? 'inline-block' : 'none';
+            }
+
+            // Menandai link navigasi yang aktif
+            const currentPathForHref = `#${getActiveRoute()}`;
+            const setActive = (links) => {
+                links.forEach(link => {
+                    if (link.getAttribute('href') === currentPathForHref) {
+                        link.classList.add('active');
+                    } else {
+                        link.classList.remove('active');
+                    }
+                });
+            };
+
+            if (this._mainNav) setActive(this._mainNav.querySelectorAll('a'));
+            if (this._navigationDrawer) setActive(this._drawerNavLinks);
+
+            await this._updateNotificationButtonState();
+        } catch (error) {
+            console.error('Error updating nav UI:', error);
         }
-
-
-        // Menandai link navigasi yang aktif
-        const currentPathForHref = `#${getActiveRoute()}`;
-        const setActive = (links) => {
-            links.forEach(link => {
-                if (link.getAttribute('href') === currentPathForHref) {
-                    link.classList.add('active');
-                } else {
-                    link.classList.remove('active');
-                }
-            });
-        };
-
-        if (this._mainNav) setActive(this._mainNav.querySelectorAll('a'));
-        if (this._navigationDrawer) setActive(this._drawerNavLinks);
-
-        this._updateNotificationButtonState();
-    
     }
 
-
-    // Metode untuk render halaman sesuai route
     async renderPage() {
-        const currentRouteKey = getActiveRoute();
-        const isAuth = isAuthenticated();
-
-        
-        const publicRoutes = ['/login', '/register'];
-    if (!isAuth && !publicRoutes.includes(currentRouteKey)) {
-        //  redirect jika belum berada di halaman login
-        if (currentRouteKey !== '/login') {
-            window.location.hash = '#/login';
-        }
-        return;
-    }
-    if (isAuth && publicRoutes.includes(currentRouteKey)) {
-        //  redirect jika belum berada di halaman utama
-        if (currentRouteKey !== '/') {
-            window.location.hash = '#/';
-        }
-    return;
-    }
-
-        // Panggil cleanup pada modul halaman sebelumnya untuk mencegah memory leak
-        if (this._currentPageModule && typeof this._currentPageModule.cleanup === 'function') {
-            await this._currentPageModule.cleanup();
-        }
-
-        // Dapatkan modul halaman yang sesuai dari definisi rute
-        const pageModule = routes[currentRouteKey] || routes['/'];
-        this._currentPageModule = pageModule; // Simpan modul saat ini
-
-        this._updateNavUI(isAuth); // Perbarui UI shell aplikasi
-
-        if (!this._content) {
-            console.error('Elemen #main-content tidak ditemukan!');
+        // Prevent concurrent renders
+        if (this._isRendering) {
+            console.warn('Render already in progress, skipping...');
             return;
         }
 
+        this._isRendering = true;
+
         try {
-            // Gunakan View Transition API untuk animasi halaman yang halus
-            if (document.startViewTransition) {
-                document.startViewTransition(async () => {
-                    this._content.innerHTML = await pageModule.render();
-                    if (typeof pageModule.afterRender === 'function') {
-                       await pageModule.afterRender();
-                    }
-                });
-            } else {
-                this._content.innerHTML = await pageModule.render();
+            const currentRouteKey = getActiveRoute();
+            const isAuth = isAuthenticated();
+            const publicRoutes = ['/login', '/register'];
+
+            // Improved authentication logic dengan debounce
+            if (!isAuth && !publicRoutes.includes(currentRouteKey)) {
+                if (currentRouteKey !== '/login') {
+                    console.log("Redirecting to login - user not authenticated");
+                    // Gunakan setTimeout untuk mencegah infinite loop
+                    setTimeout(() => {
+                        window.location.hash = '#/login';
+                    }, 0);
+                }
+                return;
+            }
+
+            if (isAuth && publicRoutes.includes(currentRouteKey)) {
+                if (currentRouteKey !== '/') {
+                    console.log("Redirecting to home - user already authenticated");
+                    setTimeout(() => {
+                        window.location.hash = '#/';
+                    }, 0);
+                }
+                return;
+            }
+
+            // Cleanup modul sebelumnya
+            await this._cleanupCurrentModule();
+
+            // Dapatkan modul halaman yang sesuai
+            const pageModule = routes[currentRouteKey] || routes['/'];
+            
+            if (!pageModule) {
+                throw new Error(`Route not found: ${currentRouteKey}`);
+            }
+
+            this._currentPageModule = pageModule;
+
+            // Update UI navigation
+            await this._updateNavUI(isAuth);
+
+            // Render halaman dengan error handling yang lebih baik
+            await this._renderPageContent(pageModule);
+
+        } catch (error) {
+            console.error(`Error rendering page:`, error);
+            this._renderErrorPage(error);
+        } finally {
+            this._isRendering = false;
+            this._closeDrawer();
+            
+            // Set focus untuk aksesibilitas
+            if (this._content) {
+                this._content.focus();
+            }
+        }
+    }
+
+    async _cleanupCurrentModule() {
+        if (this._currentPageModule && typeof this._currentPageModule.cleanup === 'function') {
+            try {
+                await this._currentPageModule.cleanup();
+            } catch (error) {
+                console.error('Error during module cleanup:', error);
+            }
+        }
+    }
+
+    async _renderPageContent(pageModule) {
+        if (!this._content) {
+            throw new Error('Content element not found');
+        }
+
+        const renderContent = async () => {
+            try {
+                const content = await pageModule.render();
+                this._content.innerHTML = content;
+                
                 if (typeof pageModule.afterRender === 'function') {
                     await pageModule.afterRender();
                 }
+            } catch (error) {
+                console.error('Error in render/afterRender:', error);
+                throw error;
             }
-        } catch (error) {
-            console.error(`Gagal merender halaman ${currentRouteKey}:`, error);
-            this._content.innerHTML = `<h1>Error: Gagal memuat halaman.</h1><p>${error.message}</p>`;
-        }
+        };
 
-        this._closeDrawer(); // Tutup drawer setelah navigasi
-        this._content.focus(); // Atur fokus ke konten utama untuk aksesibilitas
+        // Gunakan View Transition API jika tersedia
+        if (document.startViewTransition) {
+            try {
+                await document.startViewTransition(renderContent);
+            } catch (error) {
+                console.warn('View transition failed, falling back to normal render:', error);
+                await renderContent();
+            }
+        } else {
+            await renderContent();
+        }
     }
 
+    _renderErrorPage(error) {
+        if (this._content) {
+            this._content.innerHTML = `
+                <div class="error-page">
+                    <h1>Oops! Terjadi Kesalahan</h1>
+                    <p>Maaf, halaman tidak dapat dimuat.</p>
+                    <details>
+                        <summary>Detail Error</summary>
+                        <pre>${error.message}</pre>
+                    </details>
+                    <button onclick="window.location.reload()">Muat Ulang Halaman</button>
+                </div>
+            `;
+        }
+    }
+
+    // Method untuk membersihkan semua resource
+    _cleanup() {
+        // Cleanup event listeners
+        this._eventListeners.forEach((listeners, key) => {
+            listeners.forEach(({ element, event, handler }) => {
+                if (element && element.removeEventListener) {
+                    element.removeEventListener(event, handler);
+                }
+            });
+        });
+        this._eventListeners.clear();
+
+        // Cleanup tasks lainnya
+        this._cleanupTasks.forEach(task => {
+            try {
+                task();
+            } catch (error) {
+                console.error('Error during cleanup task:', error);
+            }
+        });
+        this._cleanupTasks.clear();
+
+        // Cleanup current module
+        this._cleanupCurrentModule();
+    }
+
+    // Method untuk menambah cleanup task
+    addCleanupTask(task) {
+        if (typeof task === 'function') {
+            this._cleanupTasks.add(task);
+        }
+    }
+
+    // Method untuk destroy app instance
+    destroy() {
+        this._cleanup();
+        this._currentPageModule = null;
+    }
 }
 
 export default App;

@@ -1,12 +1,13 @@
 import * as APIService from '../../data/api.js';
 import * as CameraService from '../../utils/camera-service.js';
 import { showToast } from '../../utils/toast-service.js';
-
+import { clearStoryApiCache } from '../../utils/cache-service.js';
 
 class AddStoryPresenter {
     constructor({ view }) {
         this._view = view;
 
+        this._isOpeningCamera = false;
         // masukkan Presenter ke View agar View bisa memanggil metode Presenter
         this._view.bindEvents(this);
         // Presenter memerintahkan View untuk menginisialisasi peta 
@@ -64,8 +65,11 @@ class AddStoryPresenter {
                 formData.lon
             );
             showToast('Cerita baru berhasil ditambahkan!', 'success');
+            // Hapus cache API cerita sebelum kita kembali ke halaman utama supaya tidak ambil dari cache
+            console.log('Membersihkan cache cerita untuk mendapatkan data terbaru...');
+            await clearStoryApiCache();
             this._view.resetForm();
-            setTimeout(() => { window.location.hash = '/'; }, 2000);
+            setTimeout(() => { window.location.hash = '/'; }, 1500);
         } catch (error) {
             this._view.showError(`Gagal: ${error.message}`);
         } finally {
