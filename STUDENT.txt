@@ -1,2 +1,6 @@
 APP_URL=http://localhost:9000/
-MAP_SERVICE_API_KEY=<api_key>
+
+
+Link URL Netlify
+
+https://frabjous-kulfi-6bc3e0.netlify.app/
