@@ -1,6 +1,5 @@
 import '../styles/styles.css';
 import App from './pages/app.js';
-navigator.serviceWorker.register('/sw.js');
 
 document.addEventListener('DOMContentLoaded', async () => {
     // Membuat instance baru dari kelas App
@@ -21,7 +20,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Mendaftarkan Service Worker 
     if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
+        // window.addEventListener('load', () => {
             navigator.serviceWorker.register('/sw.js') // -> Path relatif terhadap root domain
                 .then(registration => {
                     console.log('Service Worker berhasil didaftarkan dengan scope: ', registration.scope);
@@ -29,7 +28,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 .catch(error => {
                     console.log('Pendaftaran Service Worker gagal: ', error);
                 });
-        });
+        // });
     } else {
         console.warn('Service Worker tidak didukung di browser ini.');
     }
